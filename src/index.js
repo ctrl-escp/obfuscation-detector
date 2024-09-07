@@ -11,7 +11,7 @@ const availableDetectors = [];
 	'obfuscator-io',
 	'caesarp',
 	'augmentedProxiedArrayFunctionReplacements',
-].forEach(detName => availableDetectors.push(__dirname + `/detectors/${detName}`));
+].forEach(detName => availableDetectors.push(`./detectors/${detName}`));
 
 /**
  * @param {string} code

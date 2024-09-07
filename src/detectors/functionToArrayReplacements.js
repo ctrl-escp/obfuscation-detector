@@ -15,7 +15,7 @@ function detectFunctionToArrayReplacemets(flatTree) {
 		n?.id?.references?.length &&
 		!n.id.references.some(r =>
 			!(r.parentNode.type === 'MemberExpression' &&
-			r.parentKey === 'object'))) ? obfuscationName : '';
+				r.parentKey === 'object'))) ? obfuscationName : '';
 }
 
 module.exports = detectFunctionToArrayReplacemets;

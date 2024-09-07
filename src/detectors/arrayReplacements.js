@@ -1,7 +1,7 @@
 const {
 	arrayHasMinimumRequiredReferences,
 	findArrayDeclarationCandidates,
-} = require(__dirname + '/sharedDetectionMethods');
+} = require('./sharedDetectionMethods');
 
 const obfuscationName = 'array_replacements';
 

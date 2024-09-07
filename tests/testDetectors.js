@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const assert = require('node:assert');
-const detectObfuscation = require(__dirname + '/../src');
+const detectObfuscation = require('../src');
 
 function testCode(testName, code, expectedResult) {
 	const timeName = `\tCompleted in `;
@@ -11,7 +11,7 @@ function testCode(testName, code, expectedResult) {
 
 	let bestMatch = '';
 	results.forEach(res => {if (expectedResult.includes(res) && res.length > bestMatch.length) bestMatch = res;});
-	assert.equal(!!bestMatch, true,	`Failed to detect "${expectedResult}". ${results.length ? 'Detected "' + results.join(', ') + '"' : ''}`);
+	assert.equal(!!bestMatch, true, `Failed to detect "${expectedResult}". ${results.length ? 'Detected "' + results.join(', ') + '"' : ''}`);
 	results[results.indexOf(bestMatch)] = `[${bestMatch}]`;
 	console.log(`\t${results.join('\n\t')}`);
 	console.timeEnd(timeName);

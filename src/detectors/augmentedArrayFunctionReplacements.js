@@ -2,7 +2,7 @@ const {
 	arrayIsProvidedAsArgumentToIIFE,
 	findArrayDeclarationCandidates,
 	functionHasMinimumRequiredReferences,
-} = require(__dirname + '/sharedDetectionMethods');
+} = require('./sharedDetectionMethods');
 
 const obfuscationName = 'augmented_array_function_replacements';
 

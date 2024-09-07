@@ -4,16 +4,11 @@ function setCookieIndicator(flatTree) {
 	const candidate = flatTree.find(n =>
 		n.type === 'ObjectExpression' &&
 		n.properties.length &&
-		n.properties.some(p =>
-			p.key.type === 'Literal' &&
-			p.key.value === 'setCookie'));
+		n.properties.some(p => p.key.type === 'Literal' && p.key.value === 'setCookie'));
 
 	if (candidate) {
-		const setCookieFunc = candidate.properties.find(p =>
-			p.key.type === 'Literal' &&
-			p.key.value === 'setCookie')?.value;
-		if (setCookieFunc?.type === 'FunctionExpression' &&
-			setCookieFunc.body.body.some(b => b.type === 'ForStatement')) return true;
+		const setCookieFunc = candidate.properties.find(p => p.key.type === 'Literal' && p.key.value === 'setCookie')?.value;
+		if (setCookieFunc?.type === 'FunctionExpression' && setCookieFunc.body.body.some(b => b.type === 'ForStatement')) return true;
 	}
 	return false;
 }
@@ -49,8 +44,7 @@ function notBooleanTilde(flatTree) {
  * @return {string} The obfuscation name if detected; empty string otherwise.
  */
 function detectObfuscatorIo(flatTree, pdo = []) {
-	return (pdo.includes('augmented_array_function_replacements') && setCookieIndicator(flatTree)) ||
-		notBooleanTilde(flatTree) ? obfuscationName : '';
+	return (pdo.includes('augmented_array_function_replacements') && setCookieIndicator(flatTree)) || notBooleanTilde(flatTree) ? obfuscationName : '';
 }
 
 module.exports = detectObfuscatorIo;

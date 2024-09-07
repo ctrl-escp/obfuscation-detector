@@ -6,7 +6,7 @@ const obfuscationName = 'augmented_proxied_array_function_replacements';
  * @return {boolean}
  */
 function isCallExpressionWithNamedReferenceArgument(node, refName) {
-	return node?.type === 'CallExpression' && (node.arguments|| []).some(a => a?.name === refName);
+	return node?.type === 'CallExpression' && (node.arguments || []).some(a => a?.name === refName);
 }
 
 /**
@@ -20,18 +20,19 @@ function isCallExpressionWithNamedReferenceArgument(node, refName) {
 function detectAugmentedProxiedArrayFunctionReplacements(flatTree) {
 	const roots = flatTree[0].childNodes;
 	if (roots.length >= 3) {
+		// noinspection JSUnresolvedReference
 		const arrFunc = roots.find(n =>
-			n.body?.body?.length &&
-			n.body.body.slice(-1)[0]?.argument?.callee?.name === n?.id?.name &&
+			n?.body?.body?.slice(-1)?.[0]?.argument?.callee?.name === n?.id?.name &&
 			n.type === 'FunctionDeclaration');
 
 		if (arrFunc) {
 			const arrFuncName = arrFunc.id.name;
+			// noinspection JSCheckFunctionSignatures
 			if (roots.some(n =>
 				n.type === 'ExpressionStatement' &&
 				(isCallExpressionWithNamedReferenceArgument(n.expression, arrFuncName) ||
 					n.expression.type === 'SequenceExpression' &&
-					isCallExpressionWithNamedReferenceArgument(n.expression.expressions[0], arrFuncName))
+					isCallExpressionWithNamedReferenceArgument(n.expression.expressions[0], arrFuncName)),
 			)) return obfuscationName;
 		}
 	}
