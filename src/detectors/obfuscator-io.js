@@ -1,7 +1,12 @@
 const obfuscationName = 'obfuscator.io';
 
+/**
+ * Checks if an object expression with a 'setCookie' key and a function containing a for statement exists.
+ * @param {ASTNode[]} flatTree - The flattened AST of the code.
+ * @returns {boolean} True if the pattern is found.
+ */
 function setCookieIndicator(flatTree) {
-	const candidate = flatTree.find(n =>
+	const candidate = (flatTree[0].typeMap.ObjectExpression || []).find(n =>
 		n.type === 'ObjectExpression' &&
 		n.properties.length &&
 		n.properties.some(p =>
@@ -18,8 +23,13 @@ function setCookieIndicator(flatTree) {
 	return false;
 }
 
+/**
+ * Checks for a specific Boolean tilde pattern in the AST.
+ * @param {ASTNode[]} flatTree - The flattened AST of the code.
+ * @returns {boolean} True if the pattern is found.
+ */
 function notBooleanTilde(flatTree) {
-	const candidates = flatTree.filter(n =>
+	const candidates = (flatTree[0].typeMap.BlockStatement || []).filter(n =>
 		n.type === 'BlockStatement' &&
 		n.body.length === 2 &&
 		n.body[0].type === 'IfStatement' &&
@@ -39,18 +49,20 @@ function notBooleanTilde(flatTree) {
 }
 
 /**
- * Obfuscator.io obfuscation type has the following characteristics:
+ * Detects the Obfuscator.io obfuscation type.
+ *
+ * Characteristics:
  * - The same characteristics as an Augmented Array Function Replacements obfuscation type.
  * - An object expression A with a key of 'setCookie' exists.
  * - The value of object expression A is a function expression containing a for statement.
  *
- * @param {ASTNode[]} flatTree
- * @param {string[]} pdo A list of names of previously detected obfuscations
- * @return {string} The obfuscation name if detected; empty string otherwise.
+ * @param {ASTNode[]} flatTree - The flattened AST of the code.
+ * @param {string[]} [pdo=[]] - A list of names of previously detected obfuscations.
+ * @returns {string} The obfuscation name if detected; otherwise, an empty string.
  */
 function detectObfuscatorIo(flatTree, pdo = []) {
 	return (pdo.includes('augmented_array_function_replacements') && setCookieIndicator(flatTree)) ||
 		notBooleanTilde(flatTree) ? obfuscationName : '';
 }
 
-module.exports = detectObfuscatorIo;
+export {detectObfuscatorIo};
