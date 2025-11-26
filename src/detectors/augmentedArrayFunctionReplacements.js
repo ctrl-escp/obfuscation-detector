@@ -17,13 +17,13 @@ function detectAugmentedArrayFunctionReplacements(flatTree) {
 
 	const isFound = candidates.some(c => {
 		if (c.id.references.length > 2) return false;
-		const refs = c.id.references.map(n => n.parentNode);
-		const iife = arrayIsProvidedAsArgumentToIIFE(refs, c.id.name);
+		const refs = c.id.references;
+		const refsParents = c.id.references.map(n => n.parentNode);
+		const iife = arrayIsProvidedAsArgumentToIIFE(refsParents, c.id.name);
 		if (!iife) return false;
-		const relevantFunc = c.id.references.find(ref => ref.parentKey === 'arguments' &&
-			ref.parentNode?.type === 'CallExpression' &&
-			ref.parentNode.callee.type === 'FunctionExpression')?.parentNode;
-		return functionHasMinimumRequiredReferences(relevantFunc, flatTree);
+		const iifeIdentifier = iife.arguments.find(arg => refs.includes(arg));
+		const arrayIdentifierInTargetFunc = refs.find(ref => ref !== iifeIdentifier);
+		return functionHasMinimumRequiredReferences(arrayIdentifierInTargetFunc, flatTree);
 	});
 	return isFound ? obfuscationName : '';
 }
