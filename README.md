@@ -1,9 +1,11 @@
 # Obfuscation Detector
-[![Node.js CI](https://github.com/PerimeterX/obfuscation-detector/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/PerimeterX/obfuscation-detector/actions/workflows/node.js.yml)
+[![Node.js CI](https://github.com/ctrl-escp/obfuscation-detector/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/ctrl-escp/obfuscation-detector/actions/workflows/node.js.yml)
 [![Downloads](https://img.shields.io/npm/dm/obfuscation-detector.svg?maxAge=43200)](https://www.npmjs.com/package/obfuscation-detector)
 
 ## Overview
 Obfuscation Detector is a tool for identifying different types of JavaScript obfuscation by analyzing the code's Abstract Syntax Tree (AST). It is designed for security researchers, reverse engineers, and developers who need to quickly determine if and how a JavaScript file has been obfuscated.
+
+For comments and suggestions feel free to open an issue or find me on [LinkedIn](https://www.linkedin.com/in/bbaryo/)
 
 **Use Cases:**
 - Automated analysis of suspicious or third-party JavaScript

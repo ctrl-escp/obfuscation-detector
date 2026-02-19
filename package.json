@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PerimeterX/obfuscation-detector.git"
+    "url": "git+https://github.com/ctrl-escp/obfuscation-detector.git"
   },
   "keywords": [
     "JS",
@@ -27,12 +27,12 @@
     "detection",
     "detector"
   ],
-  "author": "Ben Baryo (ben.baryo@humansecurity.com)",
+  "author": "Ben Baryo (ben.baryo@gmail.com)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/PerimeterX/obfuscation-detector/issues"
+    "url": "https://github.com/ctrl-escp/obfuscation-detector/issues"
   },
-  "homepage": "https://github.com/PerimeterX/obfuscation-detector#readme",
+  "homepage": "https://github.com/ctrl-escp/obfuscation-detector#readme",
   "devDependencies": {
     "eslint": "^10.0.0",
     "husky": "^9.1.7"
