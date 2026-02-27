@@ -68,6 +68,11 @@ obfuscation-detector --help
 - **stopAfterFirst**: If `true`, returns after the first positive detection (default). If `false`, returns all detected types.
 - **Returns**: An array of detected obfuscation type names. Returns an empty array if no known type is detected.
 
+### `detectObfuscationFlatAST(tree: ASTNode[], stopAfterFirst: boolean = true): string[]`
+- **code**: JavaScript source code as an AST Tree; returned by flast's generateFlatAST.
+- **stopAfterFirst**: If `true`, returns after the first positive detection (default). If `false`, returns all detected types.
+- **Returns**: An array of detected obfuscation type names. Returns an empty array if no known type is detected.
+
 ## Supported Obfuscation Types
 Descriptions and technical details for each type are available in [src/detectors/README.md](src/detectors/README.md):
 - [Array Replacements](src/detectors/arrayReplacements.js)
