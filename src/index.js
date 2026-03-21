@@ -15,24 +15,24 @@ import * as detectors from './detectors/index.js';
  * @returns {string[]} An array of detected obfuscation type names. Returns an empty array if no known type is detected.
  */
 function detectObfuscation(code, stopAfterFirst = true) {
-	const detectedObfuscations = [];
-	try {
-		const tree = generateFlatAST(code);
-		for (const detectorName of Object.keys(detectors)) {
-			try {
-				const detectionType = detectors[detectorName](tree, detectedObfuscations);
-				if (detectionType) {
-					detectedObfuscations.push(detectionType);
-					if (stopAfterFirst) break;
-				}
-			} catch (e) {
-				logger.debug(`Error while running ${detectorName}: ${e.message}`);	// Keep for debugging
-			}
-		}
-	} catch (e) {
-		logger.debug(e.message);	// Keep for debugging
-	}
-	return detectedObfuscations;
+  const detectedObfuscations = [];
+  try {
+    const tree = generateFlatAST(code);
+    for (const detectorName of Object.keys(detectors)) {
+      try {
+        const detectionType = detectors[detectorName](tree, detectedObfuscations);
+        if (detectionType) {
+          detectedObfuscations.push(detectionType);
+          if (stopAfterFirst) break;
+        }
+      } catch (e) {
+        logger.debug(`Error while running ${detectorName}: ${e.message}`);	// Keep for debugging
+      }
+    }
+  } catch (e) {
+    logger.debug(e.message);	// Keep for debugging
+  }
+  return detectedObfuscations;
 }
 
 export {detectObfuscation};

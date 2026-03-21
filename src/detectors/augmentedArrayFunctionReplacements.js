@@ -13,19 +13,19 @@ const obfuscationName = 'augmented_array_function_replacements';
  * @returns {string} The obfuscation name if detected; otherwise, an empty string.
  */
 function detectAugmentedArrayFunctionReplacements(flatTree) {
-	const candidates = findArrayDeclarationCandidates(flatTree);
+  const candidates = findArrayDeclarationCandidates(flatTree);
 
-	const isFound = candidates.some(c => {
-		if (c.id.references.length > 2) return false;
-		const refs = c.id.references;
-		const refsParents = c.id.references.map(n => n.parentNode);
-		const iife = arrayIsProvidedAsArgumentToIIFE(refsParents, c.id.name);
-		if (!iife) return false;
-		const iifeIdentifier = iife.arguments.find(arg => refs.includes(arg));
-		const arrayIdentifierInTargetFunc = refs.find(ref => ref !== iifeIdentifier);
-		return functionHasMinimumRequiredReferences(arrayIdentifierInTargetFunc, flatTree);
-	});
-	return isFound ? obfuscationName : '';
+  const isFound = candidates.some(c => {
+    if (c.id.references.length > 2) return false;
+    const refs = c.id.references;
+    const refsParents = c.id.references.map(n => n.parentNode);
+    const iife = arrayIsProvidedAsArgumentToIIFE(refsParents, c.id.name);
+    if (!iife) return false;
+    const iifeIdentifier = iife.arguments.find(arg => refs.includes(arg));
+    const arrayIdentifierInTargetFunc = refs.find(ref => ref !== iifeIdentifier);
+    return functionHasMinimumRequiredReferences(arrayIdentifierInTargetFunc, flatTree);
+  });
+  return isFound ? obfuscationName : '';
 }
 
 export {detectAugmentedArrayFunctionReplacements};

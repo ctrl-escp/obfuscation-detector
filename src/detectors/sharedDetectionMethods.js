@@ -13,7 +13,7 @@ const minMeaningfulArrayContentLengthPercentage = 2; // 2%
  * @returns {boolean} True if the array is considered meaningful in length.
  */
 function arrayHasMeaningfulContentLength(targetArray, flatTree) {
-	return Math.floor(targetArray.length / (flatTree.length || 1) * 100) >= minMeaningfulArrayContentLengthPercentage;
+  return Math.floor(targetArray.length / (flatTree.length || 1) * 100) >= minMeaningfulArrayContentLengthPercentage;
 }
 
 /**
@@ -22,8 +22,8 @@ function arrayHasMeaningfulContentLength(targetArray, flatTree) {
  * @returns {ASTNode[]} Array declaration candidates.
  */
 function findArrayDeclarationCandidates(flatTree) {
-	return (flatTree[0].typeMap.VariableDeclarator || []).filter(n =>
-		n?.init?.type === 'ArrayExpression' &&
+  return (flatTree[0].typeMap.VariableDeclarator || []).filter(n =>
+    n?.init?.type === 'ArrayExpression' &&
 		arrayHasMeaningfulContentLength(n.init.elements, flatTree) &&
 		!n.init.elements.some(el => el.type !== 'Literal'));
 }
@@ -36,8 +36,8 @@ function findArrayDeclarationCandidates(flatTree) {
  * @returns {boolean} True if the array has enough references.
  */
 function arrayHasMinimumRequiredReferences(references, targetArrayName, flatTree) {
-	return references.filter(n =>
-		n.type === 'MemberExpression' &&
+  return references.filter(n =>
+    n.type === 'MemberExpression' &&
 		n.object.name === targetArrayName).length / (flatTree.length || 1) * 100 >= minMeaningfulPercentageOfReferences;
 }
 
@@ -48,8 +48,8 @@ function arrayHasMinimumRequiredReferences(references, targetArrayName, flatTree
  * @returns {ASTNode|null} The IIFE node if found, otherwise null.
  */
 function arrayIsProvidedAsArgumentToIIFE(references, targetArrayName) {
-	return references.find(n =>
-		n.type === 'CallExpression' &&
+  return references.find(n =>
+    n.type === 'CallExpression' &&
 		n.callee.type === 'FunctionExpression' &&
 		n.arguments.some(arg => arg.name === targetArrayName)) || null;
 }
@@ -61,28 +61,28 @@ function arrayIsProvidedAsArgumentToIIFE(references, targetArrayName) {
  * @returns {boolean} True if the function has enough relevant references.
  */
 function functionHasMinimumRequiredReferences(reference, flatTree) {
-	const funcRef = reference.scope.block;
-	const funcRefs = funcRef?.id?.references || funcRef?.parentNode?.id?.references;
-	if (funcRefs?.length) {
-		// References can be call expressions or right side of assignment expressions if proxied.
-		let relevantRefs = funcRefs.filter(n =>
-			(n.parentNode.type === 'CallExpression' &&
+  const funcRef = reference.scope.block;
+  const funcRefs = funcRef?.id?.references || funcRef?.parentNode?.id?.references;
+  if (funcRefs?.length) {
+    // References can be call expressions or right side of assignment expressions if proxied.
+    let relevantRefs = funcRefs.filter(n =>
+      (n.parentNode.type === 'CallExpression' &&
 				n.parentNode.arguments.length &&
 				n.parentKey === 'callee' &&
 				!n.parentNode.arguments.some(a => a.type !== 'Literal')) ||
 			(n.parentNode.type === 'AssignmentExpression' && n.parentKey === 'right') ||
 			(n.parentNode.type === 'VariableDeclarator' && n.parentKey === 'init'));
-		if (relevantRefs.length && relevantRefs[0].parentNode.type === 'VariableDeclarator') {
-			relevantRefs = relevantRefs.map(r => r.parentNode.id.references).flat();
-		}
-		return relevantRefs.length / (flatTree.length || 1) * 100 >= minMeaningfulPercentageOfReferences;
-	}
-	return false;
+    if (relevantRefs.length && relevantRefs[0].parentNode.type === 'VariableDeclarator') {
+      relevantRefs = relevantRefs.map(r => r.parentNode.id.references).flat();
+    }
+    return relevantRefs.length / (flatTree.length || 1) * 100 >= minMeaningfulPercentageOfReferences;
+  }
+  return false;
 }
 
 export {
-	arrayHasMinimumRequiredReferences,
-	arrayIsProvidedAsArgumentToIIFE,
-	findArrayDeclarationCandidates,
-	functionHasMinimumRequiredReferences,
+  arrayHasMinimumRequiredReferences,
+  arrayIsProvidedAsArgumentToIIFE,
+  findArrayDeclarationCandidates,
+  functionHasMinimumRequiredReferences,
 };

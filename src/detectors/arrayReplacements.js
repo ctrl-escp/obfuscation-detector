@@ -13,13 +13,13 @@ const obfuscationName = 'array_replacements';
  * @returns {string} The obfuscation name if detected; otherwise, an empty string.
  */
 function detectArrayReplacements(flatTree) {
-	const candidates = findArrayDeclarationCandidates(flatTree);
+  const candidates = findArrayDeclarationCandidates(flatTree);
 
-	const isFound = candidates.some(c => {
-		const refs = c.id.references.map(n => n.parentNode);
-		return arrayHasMinimumRequiredReferences(refs, c.id.name, flatTree);
-	});
-	return isFound ? obfuscationName : '';
+  const isFound = candidates.some(c => {
+    const refs = c.id.references.map(n => n.parentNode);
+    return arrayHasMinimumRequiredReferences(refs, c.id.name, flatTree);
+  });
+  return isFound ? obfuscationName : '';
 }
 
 export {detectArrayReplacements};

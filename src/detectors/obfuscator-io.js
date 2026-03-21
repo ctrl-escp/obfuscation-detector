@@ -6,21 +6,21 @@ const obfuscationName = 'obfuscator.io';
  * @returns {boolean} True if the pattern is found.
  */
 function setCookieIndicator(flatTree) {
-	const candidate = (flatTree[0].typeMap.ObjectExpression || []).find(n =>
-		n.type === 'ObjectExpression' &&
+  const candidate = (flatTree[0].typeMap.ObjectExpression || []).find(n =>
+    n.type === 'ObjectExpression' &&
 		n.properties.length &&
 		n.properties.some(p =>
-			p.key.type === 'Literal' &&
+		  p.key.type === 'Literal' &&
 			p.key.value === 'setCookie'));
 
-	if (candidate) {
-		const setCookieFunc = candidate.properties.find(p =>
-			p.key.type === 'Literal' &&
+  if (candidate) {
+    const setCookieFunc = candidate.properties.find(p =>
+      p.key.type === 'Literal' &&
 			p.key.value === 'setCookie')?.value;
-		if (setCookieFunc?.type === 'FunctionExpression' &&
+    if (setCookieFunc?.type === 'FunctionExpression' &&
 			setCookieFunc.body.body.some(b => b.type === 'ForStatement')) return true;
-	}
-	return false;
+  }
+  return false;
 }
 
 /**
@@ -29,23 +29,23 @@ function setCookieIndicator(flatTree) {
  * @returns {boolean} True if the pattern is found.
  */
 function notBooleanTilde(flatTree) {
-	const candidates = (flatTree[0].typeMap.BlockStatement || []).filter(n =>
-		n.type === 'BlockStatement' &&
+  const candidates = (flatTree[0].typeMap.BlockStatement || []).filter(n =>
+    n.type === 'BlockStatement' &&
 		n.body.length === 2 &&
 		n.body[0].type === 'IfStatement' &&
 		n.body[0].test?.type === 'UnaryExpression' &&
 		n.body[1].type === 'ReturnStatement');
 
-	for (const c of candidates) {
-		/** @type {ASTNode} */
-		const t = c.body[0].test;
-		if (t.operator === '!' &&
+  for (const c of candidates) {
+    /** @type {ASTNode} */
+    const t = c.body[0].test;
+    if (t.operator === '!' &&
 			t.argument?.callee?.name === 'Boolean' &&
 			t.argument.arguments?.length === 1 &&
 			t.argument.arguments[0].type === 'UnaryExpression' &&
 			t.argument.arguments[0].operator === '~') return true;
-	}
-	return false;
+  }
+  return false;
 }
 
 /**
@@ -61,7 +61,7 @@ function notBooleanTilde(flatTree) {
  * @returns {string} The obfuscation name if detected; otherwise, an empty string.
  */
 function detectObfuscatorIo(flatTree, pdo = []) {
-	return (pdo.includes('augmented_array_function_replacements') && setCookieIndicator(flatTree)) ||
+  return (pdo.includes('augmented_array_function_replacements') && setCookieIndicator(flatTree)) ||
 		notBooleanTilde(flatTree) ? obfuscationName : '';
 }
 

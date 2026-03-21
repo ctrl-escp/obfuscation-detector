@@ -11,12 +11,12 @@ const obfuscationName = 'function_to_array_replacements';
  * @returns {string} The obfuscation name if detected; otherwise, an empty string.
  */
 function detectFunctionToArrayReplacements(flatTree) {
-	return (flatTree[0].typeMap.VariableDeclarator || []).some(n =>
-		n.type === 'VariableDeclarator' &&
+  return (flatTree[0].typeMap.VariableDeclarator || []).some(n =>
+    n.type === 'VariableDeclarator' &&
 		n?.init?.callee?.type?.indexOf('unction') > -1 &&
 		n?.id?.references?.length &&
 		!n.id.references.some(r =>
-			!(r.parentNode.type === 'MemberExpression' &&
+		  !(r.parentNode.type === 'MemberExpression' &&
 			r.parentKey === 'object'))) ? obfuscationName : '';
 }
 

@@ -15,14 +15,14 @@ const obfuscationName = 'array_function_replacements';
  * @returns {string} The obfuscation name if detected; otherwise, an empty string.
  */
 function detectArrayFunctionReplacements(flatTree) {
-	const candidates = findArrayDeclarationCandidates(flatTree);
+  const candidates = findArrayDeclarationCandidates(flatTree);
 
-	const isFound = candidates.some(c => {
-	// A matching array would not have more than two reference to it
-		if (c.id.references.length > 2) return false;
-		return c.id.references.some(ref => functionHasMinimumRequiredReferences(ref, flatTree));
-	});
-	return isFound ? obfuscationName : '';
+  const isFound = candidates.some(c => {
+    // A matching array would not have more than two reference to it
+    if (c.id.references.length > 2) return false;
+    return c.id.references.some(ref => functionHasMinimumRequiredReferences(ref, flatTree));
+  });
+  return isFound ? obfuscationName : '';
 }
 
 export {detectArrayFunctionReplacements};
