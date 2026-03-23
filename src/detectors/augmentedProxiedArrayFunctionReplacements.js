@@ -1,4 +1,4 @@
-const obfuscationName = 'augmented_proxied_array_function_replacements';
+const name = 'augmented_proxied_array_function_replacements';
 
 /**
  * Checks if a node is a call expression with a named reference argument.
@@ -36,10 +36,16 @@ function detectAugmentedProxiedArrayFunctionReplacements(flatTree) {
 				(isCallExpressionWithNamedReferenceArgument(n.expression, arrFuncName) ||
 					n.expression.type === 'SequenceExpression' &&
 					isCallExpressionWithNamedReferenceArgument(n.expression.expressions[0], arrFuncName)),
-      )) return obfuscationName;
+      )) return true;
     }
   }
-  return '';
+  return false;
 }
 
-export {detectAugmentedProxiedArrayFunctionReplacements};
+const detector = {
+  name,
+  prioritizeOver: ['array_function_replacements', 'augmented_array_function_replacements'],
+  detect: detectAugmentedProxiedArrayFunctionReplacements,
+};
+
+export {detector, detectAugmentedProxiedArrayFunctionReplacements};

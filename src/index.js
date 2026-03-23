@@ -1,38 +1,69 @@
 /**
- * Main entry point for obfuscation detection.
- * Exports the detectObfuscation function.
+ * Main entry points for obfuscation detection.
  * @module obfuscation-detector
  */
 
 import {generateFlatAST, logger} from 'flast';
-import * as detectors from './detectors/index.js';
+import {detectors, getDetectorMap} from './detectors/index.js';
 
-/**
- * Detects obfuscation types in JavaScript code by analyzing its AST.
- *
- * @param {string} code - The JavaScript source code to analyze.
- * @param {boolean} [stopAfterFirst=true] - If true, returns after the first positive detection; if false, returns all matches.
- * @returns {string[]} An array of detected obfuscation type names. Returns an empty array if no known type is detected.
- */
-function detectObfuscation(code, stopAfterFirst = true) {
-  const detectedObfuscations = [];
+function getSuppressedNames(detectorName, detectorMap, visited = new Set()) {
+  if (visited.has(detectorName)) return visited;
+
+  visited.add(detectorName);
+  const detector = detectorMap.get(detectorName);
+
+  detector?.prioritizeOver.forEach(prioritizedName => {
+    getSuppressedNames(prioritizedName, detectorMap, visited);
+  });
+
+  return visited;
+}
+
+function createDetailedResults(code) {
+  const detectedNames = [];
+  const detectorMap = getDetectorMap();
+
   try {
     const tree = generateFlatAST(code);
-    for (const detectorName of Object.keys(detectors)) {
+    for (const detector of detectors) {
       try {
-        const detectionType = detectors[detectorName](tree, detectedObfuscations);
-        if (detectionType) {
-          detectedObfuscations.push(detectionType);
-          if (stopAfterFirst) break;
+        if (detector.detect(tree, detectedNames)) {
+          detectedNames.push(detector.name);
         }
       } catch (e) {
-        logger.debug(`Error while running ${detectorName}: ${e.message}`);	// Keep for debugging
+        logger.debug(`Error while running ${detector.name}: ${e.message}`);
       }
     }
   } catch (e) {
-    logger.debug(e.message);	// Keep for debugging
+    logger.debug(e.message);
   }
-  return detectedObfuscations;
+
+  return detectedNames.map(name => {
+    const suppressedBy = detectedNames.filter(otherName => {
+      if (otherName === name) return false;
+      return getSuppressedNames(otherName, detectorMap).has(name);
+    });
+
+    return {
+      name,
+      prioritizeOver: [...detectorMap.get(name).prioritizeOver],
+      suppressedBy,
+    };
+  });
 }
 
-export {detectObfuscation};
+function detectObfuscationDetailed(code) {
+  return createDetailedResults(code);
+}
+
+function detectObfuscation(code) {
+  return createDetailedResults(code).map(result => result.name);
+}
+
+function detectObfuscationReduced(code) {
+  return createDetailedResults(code)
+    .filter(result => !result.suppressedBy.length)
+    .map(result => result.name);
+}
+
+export {detectObfuscation, detectObfuscationDetailed, detectObfuscationReduced};

@@ -1,6 +1,6 @@
 import {arrayHasMinimumRequiredReferences, arrayIsProvidedAsArgumentToIIFE, findArrayDeclarationCandidates} from './sharedDetectionMethods.js';
 
-const obfuscationName = 'augmented_array_replacements';
+const name = 'augmented_array_replacements';
 
 /**
  * Detects the Augmented Array Replacements obfuscation type.
@@ -21,7 +21,13 @@ function detectAugmentedArrayReplacements(flatTree) {
     return arrayIsProvidedAsArgumentToIIFE(refs, c.id.name) &&
 			arrayHasMinimumRequiredReferences(refs, c.id.name, flatTree);
   });
-  return isFound ? obfuscationName : '';
+  return !!isFound;
 }
 
-export {detectAugmentedArrayReplacements};
+const detector = {
+  name,
+  prioritizeOver: ['array_replacements'],
+  detect: detectAugmentedArrayReplacements,
+};
+
+export {detector, detectAugmentedArrayReplacements};

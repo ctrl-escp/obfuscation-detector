@@ -1,4 +1,4 @@
-const obfuscationName = 'caesar_plus';
+const name = 'caesar_plus';
 
 /**
  * Checks if a target AST node is within a given scope block.
@@ -45,10 +45,16 @@ function detectCaesarPlus(flatTree) {
 				funcTree.some(n => n.type === 'MemberExpression' &&
 					n.object.type === 'Identifier' &&
 					n.object.name === 'String' &&
-					'fromCharCode' === (n.property.name || n.property.value))) return obfuscationName;
+					'fromCharCode' === (n.property.name || n.property.value))) return true;
     }
   }
-  return '';
+  return false;
 }
 
-export {detectCaesarPlus};
+const detector = {
+  name,
+  prioritizeOver: [],
+  detect: detectCaesarPlus,
+};
+
+export {detector, detectCaesarPlus};

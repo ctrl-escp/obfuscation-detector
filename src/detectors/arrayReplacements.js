@@ -1,6 +1,6 @@
 import {arrayHasMinimumRequiredReferences, findArrayDeclarationCandidates} from './sharedDetectionMethods.js';
 
-const obfuscationName = 'array_replacements';
+const name = 'array_replacements';
 
 /**
  * Detects the Array Replacements obfuscation type.
@@ -19,7 +19,13 @@ function detectArrayReplacements(flatTree) {
     const refs = c.id.references.map(n => n.parentNode);
     return arrayHasMinimumRequiredReferences(refs, c.id.name, flatTree);
   });
-  return isFound ? obfuscationName : '';
+  return isFound;
 }
 
-export {detectArrayReplacements};
+const detector = {
+  name,
+  prioritizeOver: [],
+  detect: detectArrayReplacements,
+};
+
+export {detector, detectArrayReplacements};

@@ -1,4 +1,4 @@
-const obfuscationName = 'function_to_array_replacements';
+const name = 'function_to_array_replacements';
 
 /**
  * Detects the Function To Array Replacements obfuscation type.
@@ -17,7 +17,13 @@ function detectFunctionToArrayReplacements(flatTree) {
 		n?.id?.references?.length &&
 		!n.id.references.some(r =>
 		  !(r.parentNode.type === 'MemberExpression' &&
-			r.parentKey === 'object'))) ? obfuscationName : '';
+			r.parentKey === 'object')));
 }
 
-export {detectFunctionToArrayReplacements};
+const detector = {
+  name,
+  prioritizeOver: [],
+  detect: detectFunctionToArrayReplacements,
+};
+
+export {detector, detectFunctionToArrayReplacements};

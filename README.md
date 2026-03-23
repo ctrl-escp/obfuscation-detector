@@ -7,14 +7,8 @@ Obfuscation Detector is a tool for identifying different types of JavaScript obf
 
 For comments and suggestions feel free to open an issue or find me on [LinkedIn](https://www.linkedin.com/in/bbaryo/)
 
-**Use Cases:**
-- Automated analysis of suspicious or third-party JavaScript
-- Security auditing and malware research
-- Integration into CI/CD pipelines to flag obfuscated code
-- Educational purposes for understanding obfuscation techniques
-
 ## How it Works
-Obfuscation Detector parses JavaScript code into an AST using [flAST](https://www.npmjs.com/package/flast) and applies a series of modular detectors. Each detector looks for specific patterns or structures that are characteristic of known obfuscation techniques. The tool can return all matching types or just the most likely (best) match.
+Obfuscation Detector parses JavaScript code into an AST using [flAST](https://www.npmjs.com/package/flast) and applies a series of modular detectors. Each detector reports a binary true/false result and can explicitly declare which less-inclusive detections it should suppress in reduced output.
 
 ## Installation
 ```shell
@@ -25,48 +19,82 @@ npm install obfuscation-detector
 ### As a Module
 ```javascript
 import fs from 'node:fs';
-import detectObfuscation from 'obfuscation-detector';
+import {
+  detectObfuscation,
+  detectObfuscationDetailed,
+  detectObfuscationReduced,
+} from 'obfuscation-detector';
 
 const code = fs.readFileSync('obfuscated.js', 'utf-8');
-const bestMatch = detectObfuscation(code); // returns [bestMatch] or []
-const allMatches = detectObfuscation(code, false); // returns all matches as an array
-console.log(`Obfuscation type(s): ${allMatches.join(', ')}`);
+const rawMatches = detectObfuscation(code);
+const reducedMatches = detectObfuscationReduced(code);
+const detailedMatches = detectObfuscationDetailed(code);
+
+console.log(`Raw detections: ${rawMatches.join(', ')}`);
+console.log(`Reduced detections: ${reducedMatches.join(', ')}`);
+console.log(detailedMatches);
 ```
 
 ### CLI
 ```shell
-obfuscation-detector /path/to/obfuscated.js [--bestMatch|-b]
-cat /path/to/obfuscated.js | obfuscation-detector [--bestMatch|-b]
+obfuscation-detector /path/to/obfuscated.js [--reduced|-r] [--detailed|-d] [--json|-j]
+cat /path/to/obfuscated.js | obfuscation-detector [--reduced|-r] [--detailed|-d] [--json|-j]
 obfuscation-detector --help
 ```
 
 #### CLI Options
-- `--bestMatch`, `-b`: Return only the first (most likely) detected obfuscation type.
+- `--reduced`, `-r`: Return only detections that are not prioritized over by another detected type.
+- `--detailed`, `-d`: Return detections with `prioritizeOver` and `suppressedBy` metadata.
+- `--json`, `-j`: Print the selected output mode as JSON.
 - `--help`, `-h`: Show usage instructions.
 - Unknown flags will result in an error and print the usage.
 
 #### Examples
-- **All matches:**
+- **Raw detections:**
   ```shell
   $ obfuscation-detector /path/to/obfuscated.js
   [+] function_to_array_replacements, augmented_proxied_array_function_replacements
   ```
-- **Best match only:**
+- **Reduced detections:**
   ```shell
-  $ obfuscation-detector /path/to/obfuscated.js --bestMatch
-  [+] function_to_array_replacements
+  $ obfuscation-detector /path/to/obfuscated.js --reduced
+  [+] augmented_proxied_array_function_replacements
   ```
-- **From stdin:**
+- **Detailed JSON output:**
   ```shell
-  $ cat obfuscated.js | obfuscation-detector -b
-  [+] function_to_array_replacements
+  $ cat obfuscated.js | obfuscation-detector --detailed --json
+  [
+    {
+      "name": "augmented_array_function_replacements",
+      "prioritizeOver": ["array_function_replacements"],
+      "suppressedBy": []
+    }
+  ]
   ```
 
 ## API Reference
-### `detectObfuscation(code: string, stopAfterFirst: boolean = true): string[]`
+### `detectObfuscation(code: string): string[]`
 - **code**: JavaScript source code as a string.
-- **stopAfterFirst**: If `true`, returns after the first positive detection (default). If `false`, returns all detected types.
-- **Returns**: An array of detected obfuscation type names. Returns an empty array if no known type is detected.
+- **Returns**: All detected obfuscation type names.
+
+### `detectObfuscationReduced(code: string): string[]`
+- **code**: JavaScript source code as a string.
+- **Returns**: Only detections that are not suppressed by another detected type's `prioritizeOver` graph.
+
+### `detectObfuscationDetailed(code: string): DetectionResult[]`
+- **code**: JavaScript source code as a string.
+- **Returns**: Detection results with deterministic priority metadata.
+
+### `DetectionResult`
+- `name: string`
+- `prioritizeOver: string[]`
+- `suppressedBy: string[]`
+
+## Priority Semantics
+- `prioritizeOver` expresses structural inclusiveness, not confidence or likelihood.
+- Raw output returns every true detection.
+- Reduced output suppresses any detection dominated by another true detection.
+- Example: `augmented_array_replacements` can prioritize over `array_replacements`, because the augmented pattern includes the array-replacement pattern.
 
 ## Supported Obfuscation Types
 Descriptions and technical details for each type are available in [src/detectors/README.md](src/detectors/README.md):
@@ -75,14 +103,14 @@ Descriptions and technical details for each type are available in [src/detectors
 - [Array Function Replacements](src/detectors/arrayFunctionReplacements.js)
 - [Augmented Array Function Replacements](src/detectors/augmentedArrayFunctionReplacements.js)
 - [Function To Array Replacements](src/detectors/functionToArrayReplacements.js)
-- [Obfuscator.io](src/detectors/obfuscator-io.js)
-- [Caesar Plus](src/detectors/caesarp.js)
+- [Obfuscator.io](src/detectors/obfuscatorIo.js)
+- [Caesar Plus](src/detectors/caesarPlus.js)
 
 ## Troubleshooting
 - **No obfuscation detected:** The code may not be obfuscated, or it uses an unknown technique. Consider contributing a new detector!
 - **Error: File not found:** Check the file path and try again.
 - **Unknown flag:** Run with only `--help` to see what options are available.
-- **Performance issues:** For very large files, detection may take longer. Consider running with only the detectors you need (advanced usage).
+- **Performance issues:** For very large files, detection may take longer because all detectors are evaluated for raw classification.
 
 ## Contribution
 To contribute to this project, see our [contribution guide](CONTRIBUTING.md).

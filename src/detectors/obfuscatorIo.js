@@ -1,4 +1,4 @@
-const obfuscationName = 'obfuscator.io';
+const name = 'obfuscator_io';
 
 /**
  * Checks if an object expression with a 'setCookie' key and a function containing a for statement exists.
@@ -62,7 +62,13 @@ function notBooleanTilde(flatTree) {
  */
 function detectObfuscatorIo(flatTree, pdo = []) {
   return (pdo.includes('augmented_array_function_replacements') && setCookieIndicator(flatTree)) ||
-		notBooleanTilde(flatTree) ? obfuscationName : '';
+		notBooleanTilde(flatTree);
 }
 
-export {detectObfuscatorIo};
+const detector = {
+  name,
+  prioritizeOver: ['augmented_array_function_replacements'],
+  detect: detectObfuscatorIo,
+};
+
+export {detector, detectObfuscatorIo};
