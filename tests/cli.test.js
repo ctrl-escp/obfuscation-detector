@@ -21,6 +21,18 @@ describe('CLI', () => {
     assert.match(output, /\[\+\] obfuscator_io/);
   });
 
+  it('prints detailed metadata in text mode when requested', () => {
+    const output = execFileSync(process.execPath, [cliPath, fixturePath, '--detailed'], {cwd: projectRoot, encoding: 'utf-8'});
+    assert.match(output, /\[\+\] array_function_replacements/);
+    assert.match(output, /prioritizeOver: \(none\)/);
+    assert.match(output, /suppressedBy: augmented_array_function_replacements, obfuscator_io/);
+    assert.match(output, /\[\+\] augmented_array_function_replacements/);
+    assert.match(output, /prioritizeOver: array_function_replacements/);
+    assert.match(output, /suppressedBy: obfuscator_io/);
+    assert.match(output, /\[\+\] obfuscator_io/);
+    assert.match(output, /suppressedBy: \(none\)/);
+  });
+
   it('prints detailed json when requested', () => {
     const output = execFileSync(process.execPath, [cliPath, fixturePath, '--detailed', '--json'], {cwd: projectRoot, encoding: 'utf-8'});
     const parsed = JSON.parse(output);

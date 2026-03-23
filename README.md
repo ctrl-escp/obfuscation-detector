@@ -60,6 +60,13 @@ obfuscation-detector --help
   $ obfuscation-detector /path/to/obfuscated.js --reduced
   [+] augmented_proxied_array_function_replacements
   ```
+- **Detailed text output:**
+  ```shell
+  $ obfuscation-detector /path/to/obfuscated.js --detailed
+  [+] augmented_array_function_replacements
+      prioritizeOver: array_function_replacements
+      suppressedBy: (none)
+  ```
 - **Detailed JSON output:**
   ```shell
   $ cat obfuscated.js | obfuscation-detector --detailed --json

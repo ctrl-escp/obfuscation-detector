@@ -8,6 +8,19 @@ function printUsage() {
   console.log('       obfuscation-detector --help|-h');
 }
 
+function formatDetailedResults(results) {
+  return results.map(result => {
+    const prioritizeOver = result.prioritizeOver.length ? result.prioritizeOver.join(', ') : '(none)';
+    const suppressedBy = result.suppressedBy.length ? result.suppressedBy.join(', ') : '(none)';
+
+    return [
+      `[+] ${result.name}`,
+      `    prioritizeOver: ${prioritizeOver}`,
+      `    suppressedBy: ${suppressedBy}`,
+    ].join('\n');
+  }).join('\n');
+}
+
 const args = process.argv.slice(2);
 const allowedFlags = new Set(['--help', '-h', '--reduced', '-r', '--json', '-j', '--detailed', '-d']);
 
@@ -56,7 +69,7 @@ try {
   if (useJson) {
     console.log(JSON.stringify(results, null, 2));
   } else if (results.length) {
-    if (useDetailed) console.log('[+] ' + results.map(result => result.name).join(', '));
+    if (useDetailed) console.log(formatDetailedResults(results));
     else console.log('[+] ' + results.join(', '));
   } else {
     console.log('[-] No obfuscation detected / unknown obfuscation');
