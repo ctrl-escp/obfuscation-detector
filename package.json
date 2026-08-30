@@ -4,6 +4,13 @@
   "description": "Javascript obfuscation detector",
   "main": "src/index.js",
   "type": "module",
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md"
+  ],
   "directories": {
     "prepare": "husky",
     "test": "tests"
