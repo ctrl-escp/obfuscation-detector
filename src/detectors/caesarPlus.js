@@ -1,7 +1,17 @@
+/**
+ * @module caesarPlus
+ *
+ * Label: `caesar_plus`
+ *
+ * Detects Caesar-cipher-like packing that wraps logic in a 3-letter-named IIFE and
+ * references `window`, `document`, and `String.fromCharCode` inside that scope.
+ */
+
 const name = 'caesar_plus';
 
 /**
- * Checks if a target AST node is within a given scope block.
+ * Checks if a target AST node is within a given scope block by walking `scope.upper`.
+ *
  * @param {ASTNode} targetNode - The node to check.
  * @param {ASTNode} targetScopeBlock - The scope block to check against.
  * @returns {boolean} True if the node is in the scope; otherwise, false.
@@ -19,13 +29,30 @@ function isNodeInScope(targetNode, targetScopeBlock) {
 /**
  * Detects the Caesar Plus obfuscation type.
  *
- * Characteristics:
- * - A function expression A with an id of 3 characters exists.
- * - Function A is wrapped in a call expression without arguments.
- * - Function A contains the following identifiers: window, document, String.fromCharCode.
+ * ## Algorithm
+ * 1. Find `FunctionExpression` nodes with a 3-character `id`, wrapped in a no-arg
+ *    `CallExpression` (IIFE).
+ * 2. Restrict attention to nodes in that function's scope.
+ * 3. Require every `VariableDeclarator` id in that scope to also be length 3.
+ * 4. Require references to `window`, `document`, and `String.fromCharCode` inside the scope.
  *
- * @param {ASTNode[]} flatTree - The flattened AST of the code.
- * @returns {string} The obfuscation name if detected; otherwise, an empty string.
+ * ## Example (shape)
+ * ```js
+ * (function abc() {
+ *   var xyz = String.fromCharCode(65);
+ *   return window[xyz] || document;
+ * })();
+ * ```
+ *
+ * ## True negatives
+ * - 3-letter IIFEs without the window/document/fromCharCode trio.
+ * - Scopes that mix in longer identifier names.
+ *
+ * ## Reduced-mode priority
+ * - `prioritizeOver`: none.
+ *
+ * @param {ASTNode[]} flatTree - Flattened AST from flAST.
+ * @returns {boolean} True when the pattern is present.
  */
 function detectCaesarPlus(flatTree) {
   // Verify the main function's name is 3 letters long and has maximum 1 reference;
@@ -51,6 +78,9 @@ function detectCaesarPlus(flatTree) {
   return false;
 }
 
+/**
+ * @type {{name: string, prioritizeOver: string[], detect: Function}}
+ */
 const detector = {
   name,
   prioritizeOver: [],

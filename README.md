@@ -109,8 +109,14 @@ Descriptions and technical details for each type are available in [src/detectors
 - [Augmented Array Replacements](src/detectors/augmentedArrayReplacements.js)
 - [Array Function Replacements](src/detectors/arrayFunctionReplacements.js)
 - [Augmented Array Function Replacements](src/detectors/augmentedArrayFunctionReplacements.js)
+- [Proxied Array Function Replacements](src/detectors/proxiedArrayFunctionReplacements.js)
+- [Augmented Proxied Array Function Replacements](src/detectors/augmentedProxiedArrayFunctionReplacements.js)
 - [Function To Array Replacements](src/detectors/functionToArrayReplacements.js)
+- [CFF Storage Object](src/detectors/cffStorageObject.js)
+- [Sequenced Index Switch](src/detectors/sequencedIndexSwitch.js)
 - [Obfuscator.io](src/detectors/obfuscatorIo.js)
+- [js-confuser String Bank](src/detectors/jsConfuserStringBank.js)
+- [js-confuser State Machine](src/detectors/jsConfuserStateMachine.js)
 - [Caesar Plus](src/detectors/caesarPlus.js)
 
 ## Troubleshooting
