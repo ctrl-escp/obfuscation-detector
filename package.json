@@ -39,6 +39,6 @@
     "husky": "^9.1.7"
   },
   "dependencies": {
-    "flast": "^3.1.0"
+    "flast": "^3.2.0"
   }
 }
