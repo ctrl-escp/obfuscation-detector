@@ -4,69 +4,83 @@
 
 This directory contains all the detection logic for identifying different types of JavaScript obfuscation. Each **detector** is a self-contained module that analyzes the AST (Abstract Syntax Tree) of JavaScript code for patterns characteristic of a specific obfuscation technique.
 
-Detectors are modular and easy to extend.
+Detectors are modular and easy to extend. Each detector exports a `{name, prioritizeOver, detect}` object. `prioritizeOver` expresses structural inclusiveness for reduced-mode suppression.
 
 ---
 
 ## List of Detectors
 
-| Detector Name                                 | What It Detects                                      | Implementation File                                      |
-|-----------------------------------------------|------------------------------------------------------|----------------------------------------------------------|
-| **Array Replacements**                        | Large arrays of strings used as lookup tables         | [arrayReplacements.js](arrayReplacements.js)             |
-| **Augmented Array Replacements**              | Array replacements with IIFE wrappers                 | [augmentedArrayReplacements.js](augmentedArrayReplacements.js) |
-| **Array Function Replacements**               | Functions that return values from obfuscated arrays   | [arrayFunctionReplacements.js](arrayFunctionReplacements.js)   |
-| **Augmented Array Function Replacements**     | Array function replacements with IIFE wrappers        | [augmentedArrayFunctionReplacements.js](augmentedArrayFunctionReplacements.js) |
-| **Augmented Proxied Array Function Replacements** | Obfuscation using proxies and function arrays         | [augmentedProxiedArrayFunctionReplacements.js](augmentedProxiedArrayFunctionReplacements.js) |
-| **Function To Array Replacements**            | Variables assigned to function calls, used as objects | [functionToArrayReplacements.js](functionToArrayReplacements.js) |
-| **Obfuscator.io**                             | Patterns from the obfuscator.io tool                  | [obfuscatorIo.js](obfuscatorIo.js)                       |
-| **Caesar Plus**                               | Caesar cipher-like obfuscation with 3-letter IDs      | [caesarPlus.js](caesarPlus.js)                           |
+| Detector Name | Label | Implementation |
+|---------------|-------|----------------|
+| Array Replacements | `array_replacements` | [arrayReplacements.js](arrayReplacements.js) |
+| Augmented Array Replacements | `augmented_array_replacements` | [augmentedArrayReplacements.js](augmentedArrayReplacements.js) |
+| Array Function Replacements | `array_function_replacements` | [arrayFunctionReplacements.js](arrayFunctionReplacements.js) |
+| Augmented Array Function Replacements | `augmented_array_function_replacements` | [augmentedArrayFunctionReplacements.js](augmentedArrayFunctionReplacements.js) |
+| Proxied Array Function Replacements | `proxied_array_function_replacements` | [proxiedArrayFunctionReplacements.js](proxiedArrayFunctionReplacements.js) |
+| Augmented Proxied Array Function Replacements | `augmented_proxied_array_function_replacements` | [augmentedProxiedArrayFunctionReplacements.js](augmentedProxiedArrayFunctionReplacements.js) |
+| Function To Array Replacements | `function_to_array_replacements` | [functionToArrayReplacements.js](functionToArrayReplacements.js) |
+| CFF Storage Object | `cff_storage_object` | [cffStorageObject.js](cffStorageObject.js) |
+| Sequenced Index Switch | `sequenced_index_switch` | [sequencedIndexSwitch.js](sequencedIndexSwitch.js) |
+| Obfuscator.io | `obfuscator_io` | [obfuscatorIo.js](obfuscatorIo.js) |
+| js-confuser String Bank | `js_confuser_string_bank` | [jsConfuserStringBank.js](jsConfuserStringBank.js) |
+| js-confuser State Machine | `js_confuser_state_machine` | [jsConfuserStateMachine.js](jsConfuserStateMachine.js) |
+| Caesar Plus | `caesar_plus` | [caesarPlus.js](caesarPlus.js) |
 
 ---
 
-## Detector Details
+## Replacements-family naming
 
-### Array Replacements
-- **File:** [arrayReplacements.js](arrayReplacements.js)
-- **Description:** Detects large arrays of strings used as lookup tables for obfuscated code.
+Bases: `array_replacements`, `array_function_replacements`, `function_to_array_replacements`.
 
-### Augmented Array Replacements
-- **File:** [augmentedArrayReplacements.js](augmentedArrayReplacements.js)
-- **Description:** Like array replacements, but the array is passed to an IIFE (Immediately Invoked Function Expression).
+Modifiers: `augmented_` (rotate IIFE with literal hop count or checksum `parseInt` stop), `proxied_` (single-return argument-remapping wrappers).
 
-### Array Function Replacements
-- **File:** [arrayFunctionReplacements.js](arrayFunctionReplacements.js)
-- **Description:** Detects functions that return values from an obfuscated array, often used to hide string literals.
+Compounds keep compositional names (`augmented_proxied_array_function_replacements`, etc.). Shared helpers live in [sharedDetectionMethods.js](sharedDetectionMethods.js).
 
-### Augmented Array Function Replacements
-- **File:** [augmentedArrayFunctionReplacements.js](augmentedArrayFunctionReplacements.js)
-- **Description:** Like array function replacements, but with IIFE wrappers for added obfuscation.
+---
 
-### Augmented Proxied Array Function Replacements
-- **File:** [augmentedProxiedArrayFunctionReplacements.js](augmentedProxiedArrayFunctionReplacements.js)
-- **Description:** Uses proxies and function arrays to further complicate deobfuscation.
+## Product / composite labels
 
-### Function To Array Replacements
-- **File:** [functionToArrayReplacements.js](functionToArrayReplacements.js)
-- **Description:** Variables assigned to function calls, then used as objects of member expressions.
+- **`obfuscator_io`**: composite. In reduced mode it can suppress replacements-family hits plus `cff_storage_object` / `sequenced_index_switch`. Full mode still lists every match.
+- **`cff_storage_object` / `sequenced_index_switch`**: javascript-obfuscator control-flow extras (not replacements-family).
+- **`js_confuser_*`**: separate product labels; they prioritize over `obfuscator_io` if both fire. Not folded into the obfuscator.io composite.
 
-### Obfuscator.io
-- **File:** [obfuscatorIo.js](obfuscatorIo.js)
-- **Description:** Detects patterns generated by the [obfuscator.io](https://obfuscator.io/) tool, including debug protection and trap functions.
-- **Example:** See the detailed explanation and code sample below.
+---
 
-### Caesar Plus
-- **File:** [caesarPlus.js](caesarPlus.js)
-- **Description:** Detects Caesar cipher-like obfuscation, typically with 3-letter function names and specific identifier usage.
+## Detector details
+
+Each implementation file’s module JSDoc is the source of truth for:
+
+- **Algorithm** — step-by-step AST checks
+- **Examples** — true-positive shapes
+- **True negatives** — what must not match
+- **`prioritizeOver`** — reduced-mode suppressions
+
+| Label | File | One-line summary |
+|-------|------|------------------|
+| `array_replacements` | [arrayReplacements.js](arrayReplacements.js) | Large literal array + many `arr[i]` reads |
+| `augmented_array_replacements` | [augmentedArrayReplacements.js](augmentedArrayReplacements.js) | Base + rotate IIFE (hop count or checksum) |
+| `array_function_replacements` | [arrayFunctionReplacements.js](arrayFunctionReplacements.js) | Decoder over array; many literal-arg calls |
+| `augmented_array_function_replacements` | [augmentedArrayFunctionReplacements.js](augmentedArrayFunctionReplacements.js) | Array-function + rotate IIFE |
+| `proxied_array_function_replacements` | [proxiedArrayFunctionReplacements.js](proxiedArrayFunctionReplacements.js) | Array-function + remapping wrappers |
+| `augmented_proxied_array_function_replacements` | [augmentedProxiedArrayFunctionReplacements.js](augmentedProxiedArrayFunctionReplacements.js) | Factory + rotate (+ wrappers) |
+| `function_to_array_replacements` | [functionToArrayReplacements.js](functionToArrayReplacements.js) | `const a = fn(); a[i]` or memoized factory |
+| `cff_storage_object` | [cffStorageObject.js](cffStorageObject.js) | 5-letter-key CFF storage object |
+| `sequenced_index_switch` | [sequencedIndexSwitch.js](sequencedIndexSwitch.js) | Pipe-split / numeric `switch (seq[i++])` |
+| `obfuscator_io` | [obfuscatorIo.js](obfuscatorIo.js) | Product composite fingerprint |
+| `js_confuser_string_bank` | [jsConfuserStringBank.js](jsConfuserStringBank.js) | Short-string bank + non-trivial indexer |
+| `js_confuser_state_machine` | [jsConfuserStateMachine.js](jsConfuserStateMachine.js) | `sum(states)` loop with switch/if |
+| `caesar_plus` | [caesarPlus.js](caesarPlus.js) | 3-letter IIFE + window/document/fromCharCode |
+
+Shared rotate / factory / proxy / CFF helpers: [sharedDetectionMethods.js](sharedDetectionMethods.js).
 
 ---
 
 ## How to Add a New Detector
 
-1. **Create a new file** in this directory, e.g., `myNewDetector.js`.
-2. **Export a function** named `detectMyNewDetector` that takes the AST (flatTree) as input and returns the obfuscation name (or `''` if not detected).
-3. **Add your detector** to `index.js` using `export * from './myNewDetector.js';`.
-4. **Document your detector** in this README (add a row to the table above and a short description).
-5. **Add tests** in the `tests/` directory to ensure your detector works as expected.
+1. Create a new file in this directory that exports `{detector}` with `name`, `prioritizeOver`, and `detect(flatTree, previouslyDetectedNames)`.
+2. Register it in [index.js](index.js).
+3. Document it in this README and the root [README.md](../../README.md).
+4. Add TP/TN fixtures under `tests/resources/` and expectations in `tests/detectors.test.js`.
 
 ---
 
@@ -74,6 +88,4 @@ Detectors are modular and easy to extend.
 - [obfuscator.io](https://obfuscator.io/)
 - [AST Explorer](https://astexplorer.net/)
 
----
-
-For questions or contributions, see the main [README](../README.md) and [CONTRIBUTING.md](../CONTRIBUTING.md).
+For questions or contributions, see the main [README](../../README.md) and [CONTRIBUTING.md](../../CONTRIBUTING.md).
