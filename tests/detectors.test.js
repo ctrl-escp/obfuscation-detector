@@ -43,13 +43,48 @@ const fixtures = [
   },
   {
     filename: 'obfuscator.io-NotBooleanTilde.js',
-    raw: ['obfuscator_io'],
+    raw: ['function_to_array_replacements', 'obfuscator_io'],
     reduced: ['obfuscator_io'],
   },
   {
     filename: 'obfuscator.io-setCookie.js',
     raw: ['array_function_replacements', 'augmented_array_function_replacements', 'obfuscator_io'],
     reduced: ['obfuscator_io'],
+  },
+  {
+    filename: 'function_to_array_memoized_factory.js',
+    raw: ['function_to_array_replacements'],
+    reduced: ['function_to_array_replacements'],
+  },
+  {
+    filename: 'augmented_array_replacements_checksum.js',
+    raw: ['array_replacements', 'augmented_array_replacements'],
+    reduced: ['augmented_array_replacements'],
+  },
+  {
+    filename: 'proxied_array_function_replacements.js',
+    raw: ['proxied_array_function_replacements'],
+    reduced: ['proxied_array_function_replacements'],
+  },
+  {
+    filename: 'cff_storage_object.js',
+    raw: ['cff_storage_object'],
+    reduced: ['cff_storage_object'],
+  },
+  {
+    filename: 'sequenced_index_switch.js',
+    raw: ['sequenced_index_switch'],
+    reduced: ['sequenced_index_switch'],
+  },
+  {
+    filename: 'js_confuser_string_bank.js',
+    raw: ['js_confuser_string_bank'],
+    reduced: ['js_confuser_string_bank'],
+  },
+  {
+    filename: 'js_confuser_state_machine.js',
+    raw: ['js_confuser_state_machine'],
+    reduced: ['js_confuser_state_machine'],
   },
 ];
 
@@ -120,7 +155,11 @@ describe('Priority graph', () => {
     assert.deepStrictEqual(detailed, [
       {
         name: 'augmented_proxied_array_function_replacements',
-        prioritizeOver: ['array_function_replacements', 'augmented_array_function_replacements'],
+        prioritizeOver: [
+          'array_function_replacements',
+          'augmented_array_function_replacements',
+          'proxied_array_function_replacements',
+        ],
         suppressedBy: [],
       },
       {
@@ -129,5 +168,12 @@ describe('Priority graph', () => {
         suppressedBy: [],
       },
     ]);
+  });
+
+  it('suppresses replacements-family labels when obfuscator_io fires in reduced mode', () => {
+    const detailed = detectObfuscationDetailed(readFixture('obfuscator.io-NotBooleanTilde.js'));
+    assert.deepStrictEqual(detailed.map(r => r.name), ['function_to_array_replacements', 'obfuscator_io']);
+    const f2a = detailed.find(r => r.name === 'function_to_array_replacements');
+    assert.ok(f2a.suppressedBy.includes('obfuscator_io'));
   });
 });
