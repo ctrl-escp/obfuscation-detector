@@ -1,9 +1,25 @@
+/**
+ * @module obfuscatorIo
+ *
+ * Label: `obfuscator_io`
+ *
+ * Product **composite** for [javascript-obfuscator](https://obfuscator.io/) / obfuscator.io
+ * output. In full mode it co-emits with whatever replacements-family / CFF labels also
+ * matched; in reduced mode it typically remains the single primary label by suppressing
+ * those less-specific hits via `prioritizeOver`.
+ *
+ * Does **not** fold `js_confuser_*` labels.
+ */
+
 const name = 'obfuscator_io';
 
 /**
- * Checks if an object expression with a 'setCookie' key and a function containing a for statement exists.
- * @param {ASTNode[]} flatTree - The flattened AST of the code.
- * @returns {boolean} True if the pattern is found.
+ * Heuristic A: object with a `'setCookie'` literal key whose value is a function
+ * containing a `for` loop (common in older obfuscator.io samples that also have
+ * augmented array-function replacements).
+ *
+ * @param {ASTNode[]} flatTree - Flattened AST from flAST.
+ * @returns {boolean}
  */
 function setCookieIndicator(flatTree) {
   const candidate = (flatTree[0].typeMap.ObjectExpression || []).find(n =>
@@ -24,9 +40,12 @@ function setCookieIndicator(flatTree) {
 }
 
 /**
- * Checks for a specific Boolean tilde pattern in the AST.
- * @param {ASTNode[]} flatTree - The flattened AST of the code.
- * @returns {boolean} True if the pattern is found.
+ * Heuristic B: block of the form
+ * `if (!Boolean(~…)) { … } return …`
+ * which appears in certain obfuscator.io transforms independent of the string-array pack.
+ *
+ * @param {ASTNode[]} flatTree - Flattened AST from flAST.
+ * @returns {boolean}
  */
 function notBooleanTilde(flatTree) {
   const candidates = (flatTree[0].typeMap.BlockStatement || []).filter(n =>
@@ -51,23 +70,61 @@ function notBooleanTilde(flatTree) {
 /**
  * Detects the Obfuscator.io obfuscation type.
  *
- * Characteristics:
- * - The same characteristics as an Augmented Array Function Replacements obfuscation type.
- * - An object expression A with a key of 'setCookie' exists.
- * - The value of object expression A is a function expression containing a for statement.
+ * ## Algorithm
+ * Succeeds if **either**:
+ * 1. A previous detector already reported `augmented_array_function_replacements`
+ *    **and** `setCookieIndicator` matches; or
+ * 2. `notBooleanTilde` matches on its own.
  *
- * @param {ASTNode[]} flatTree - The flattened AST of the code.
- * @param {string[]} [pdo=[]] - A list of names of previously detected obfuscations.
- * @returns {string} The obfuscation name if detected; otherwise, an empty string.
+ * ## Example (setCookie path — conceptual)
+ * ```js
+ * // …augmented array-function pack…
+ * // …augmented array-function pack…
+ * ({ 'setCookie': function () { for (;;) { } } });
+ * ```
+ *
+ * ## Example (Boolean-tilde path — conceptual)
+ * ```js
+ * {
+ *   if (!Boolean(~something)) { }
+ *   return result;
+ * }
+ * ```
+ *
+ * ## True negatives
+ * - Augmented array-function code without the setCookie / tilde fingerprints.
+ * - Unrelated objects that happen to contain a `setCookie` method without the for-loop body.
+ *
+ * ## Reduced-mode priority
+ * - `prioritizeOver`:
+ *   - `augmented_array_function_replacements` (and transitively `array_function_replacements`)
+ *   - `augmented_proxied_array_function_replacements` (and its prioritizeOver targets)
+ *   - `function_to_array_replacements`
+ *   - `cff_storage_object`
+ *   - `sequenced_index_switch`
+ * - Full mode still lists every matching family label **and** `obfuscator_io`.
+ *
+ * @param {ASTNode[]} flatTree - Flattened AST from flAST.
+ * @param {string[]} [pdo=[]] - Names of obfuscation types already detected earlier in the run.
+ * @returns {boolean} True when either product fingerprint matches.
  */
 function detectObfuscatorIo(flatTree, pdo = []) {
   return (pdo.includes('augmented_array_function_replacements') && setCookieIndicator(flatTree)) ||
 		notBooleanTilde(flatTree);
 }
 
+/**
+ * @type {{name: string, prioritizeOver: string[], detect: Function}}
+ */
 const detector = {
   name,
-  prioritizeOver: ['augmented_array_function_replacements'],
+  prioritizeOver: [
+    'augmented_array_function_replacements',
+    'augmented_proxied_array_function_replacements',
+    'function_to_array_replacements',
+    'cff_storage_object',
+    'sequenced_index_switch',
+  ],
   detect: detectObfuscatorIo,
 };
 
